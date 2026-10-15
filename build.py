@@ -128,7 +128,8 @@ a{{color:inherit}}
 
 /* ticker */
 .ticker{{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding:12px 0;overflow:hidden}}
-.tick-label{{background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:5px 9px;white-space:nowrap}}
+.tick-label{{background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:5px 9px;white-space:nowrap;position:relative;z-index:2}}
+.tick-wrap{{flex:1;overflow:hidden;min-width:0}}
 .tick-track{{display:flex;gap:22px;white-space:nowrap;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;animation:slide 70s linear infinite}}
 .tick-sep{{color:var(--accent);margin-left:22px}}
 @keyframes slide{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
@@ -204,7 +205,7 @@ h2{{font-family:var(--display);font-weight:700;letter-spacing:-.015em;line-heigh
 
   <div class="ticker">
     <span class="tick-label">ULTIM'ORA</span>
-    <div class="tick-track">{ticker}{ticker}</div>
+    <div class="tick-wrap"><div class="tick-track">{ticker}{ticker}</div></div>
   </div>
 
   <nav class="chips">{chips}</nav>
