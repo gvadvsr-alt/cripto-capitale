@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="prisma">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cripto Capitale — briefing di giovedì 15 ottobre 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..500&family=Fraunces:opsz,wght@9..144,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ DESIGN SYSTEM — due temi ============
+   tema "prisma"  = token letti da prismanews.com/en il 15/10/2026: carta #f4eddc, inchiostro #1b1714,
+                    accento #b9091b, teal #0096a7, ambra #cfa200, bordi #d8cfbc;
+                    font Newsreader (corpo 19px), Fraunces (titoli), JetBrains Mono (metadati 11.5px).
+   tema "cripto"  = design system Binance (sito crypto n.1 per visite mensili, letto il 15/10/2026):
+                    #181A20 / superfici #202630 · #29313D · bordi #333B47 · testo #EAECEF · unico accento #FCD535
+                    · semantici #2EBD85 / #F6465D, font IBM Plex Sans.                        */
+:root{
+  --bg:#f4eddc; --paper:#faf6ec; --ink:#1b1714; --ink-2:#3d362e; --muted:#7b7263;
+  --line:#d8cfbc; --line-2:#c9bfa8; --accent:#b9091b; --accent-2:#b82027; --teal:#0096a7; --amber:#cfa200;
+  --display:"Fraunces",Georgia,serif; --body:"Newsreader",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --body-size:19px; --maxw:1280px;
+}
+html[data-theme="cripto"]{
+  --bg:#181A20; --paper:#202630; --ink:#EAECEF; --ink-2:#EAECEF; --muted:#929AA5;
+  --line:#333B47; --line-2:#333B47; --accent:#FCD535; --accent-2:#F0B90B; --teal:#2EBD85; --amber:#FCD535;
+  --display:"IBM Plex Sans",Arial,sans-serif; --body:"IBM Plex Sans",Arial,sans-serif; --mono:"IBM Plex Sans",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--body-size);line-height:1.45}
+.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+a{color:inherit}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+
+/* topbar */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;letter-spacing:-.02em;font-size:22px}
+.brand .mark{width:26px;height:26px;background:var(--accent);display:inline-block;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.brand small{font-family:var(--mono);font-size:11.5px;font-weight:400;color:var(--muted);letter-spacing:.14em}
+.actions{display:flex;align-items:center;gap:14px}
+.icon{width:34px;height:34px;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:12px;background:transparent;color:var(--ink);cursor:pointer}
+.icon.wide{width:auto;padding:0 12px}
+.toggle{border:1px solid var(--line);background:transparent;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:9px 12px;cursor:pointer}
+
+/* edition */
+.edition{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}
+.edition .l{color:var(--accent);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+
+/* ticker */
+.ticker{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding:12px 0;overflow:hidden}
+.tick-label{background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:5px 9px;white-space:nowrap}
+.tick-track{display:flex;gap:22px;white-space:nowrap;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;animation:slide 70s linear infinite}
+.tick-sep{color:var(--accent);margin-left:22px}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tick-track{animation:none}}
+
+/* chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--line)}
+.chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;padding:9px 16px;border:1px solid var(--line-2);background:transparent;color:var(--ink);border-radius:999px;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+html[data-theme="cripto"] .chip.on{color:#202630;font-weight:600}
+html[data-theme="cripto"] .tick-label{color:#202630;font-weight:700}
+html[data-theme="cripto"] .badge-sec{background:#29313D;color:#EAECEF}
+
+/* layout */
+.layout{display:grid;grid-template-columns:1fr 360px;gap:32px;padding:24px 0 40px}
+.sectlabel{display:flex;align-items:center;gap:14px;margin:6px 0 18px}
+.sectlabel:after{content:"";flex:1;height:1px;background:var(--line)}
+.story.big .thumb img{width:100%;height:340px;object-fit:cover;object-position:center 30%;display:block}
+.thumb{position:relative;overflow:hidden;background:var(--line)}
+.badge-ai,.badge-sec{position:absolute;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:4px 7px}
+.badge-ai{top:10px;left:10px;background:var(--accent);color:#fff}
+html[data-theme="cripto"] .badge-ai{color:#202630;font-weight:700}
+.badge-sec{bottom:10px;left:10px;background:rgba(244,237,220,.92);color:#1b1714}
+h2{font-family:var(--display);font-weight:700;letter-spacing:-.015em;line-height:1.12;margin:14px 0 8px;font-size:27px}
+.story.big h2{font-size:40px;margin-top:16px}
+.dek{margin:0 0 10px;color:var(--ink-2)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:34px;border-top:1px solid var(--line);padding-top:26px}
+.grid .thumb img{width:100%;height:150px;object-fit:cover;display:block}
+.grid h2{font-size:19px;margin-top:12px}
+.grid .dek{font-size:16px;color:var(--ink-2)}
+.dot{margin:0 6px}
+
+/* rail */
+.rail{display:flex;flex-direction:column;gap:18px}
+.card{border:1px solid var(--line);background:var(--paper);padding:18px}
+.card h3{font-family:var(--display);font-size:21px;margin:0 0 4px}
+.bar-row{display:grid;grid-template-columns:104px 1fr 26px;align-items:center;gap:8px;margin:7px 0}
+.bar{height:9px;background:var(--teal)}
+.bar-row .val{text-align:right}
+.bar-row .label{white-space:nowrap}
+.legend{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.discl p{margin:6px 0 0;font-size:16px;color:var(--ink-2)}
+.discl a{color:var(--accent)}
+.foot{border-top:1px solid var(--line);padding:18px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span>CRIPTO CAPITALE <small>· PRISMA NEWS</small></div>
+    <div class="actions">
+      <button class="icon">⌕</button>
+      <button class="icon">▤</button>
+      <button class="icon wide">IT ▾</button>
+      <button class="toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme==='prisma'?'cripto':'prisma'">TEMA</button>
+      <button class="icon">Aa</button>
+      <button class="icon wide">ACCEDI</button>
+    </div>
+  </div>
+
+  <div class="edition">
+    <div class="l">● Edizione delle 12:16 UTC · giovedì 15 ottobre 2026</div>
+    <div class="mono">58 fonti · lingua IT · 10 briefing oggi</div>
+  </div>
+
+  <div class="ticker">
+    <span class="tick-label">ULTIM'ORA</span>
+    <div class="tick-track"><span class="tick-item">Hyperliquid, liquidato l&#x27;account di Machi Big Brother: da 12,25 milioni a 21.800 dollari<span class="tick-sep">■</span></span><span class="tick-item">Seul stringe i requisiti di cybersicurezza per banche e operatori crypto<span class="tick-sep">■</span></span><span class="tick-item">Tether avrebbe versato 6,3 milioni alla società di Bo Hines durante la legge stablecoin<span class="tick-sep">■</span></span><span class="tick-item">Crypto, due ondate di liquidazioni a ottobre: bitcoin ed ether sotto pressione<span class="tick-sep">■</span></span><span class="tick-item">L&#x27;Eba classifica l&#x27;Usdc di Circle come token significativo: vigilanza congiunta con la Francia<span class="tick-sep">■</span></span><span class="tick-item">Chainlink attiva gli oracoli nativi su Stellar, con 3,54 miliardi di asset reali tokenizzati<span class="tick-sep">■</span></span><span class="tick-item">BingX EU ottiene dalla FMA austriaca la licenza MiCA, ma senza data di lancio<span class="tick-sep">■</span></span><span class="tick-item">Il rapporto OCC sul debanking: politiche restrittive accertate, nessun caso cripto documentato<span class="tick-sep">■</span></span><span class="tick-item">Hyperliquid, liquidato l&#x27;account di Machi Big Brother: da 12,25 milioni a 21.800 dollari<span class="tick-sep">■</span></span><span class="tick-item">Seul stringe i requisiti di cybersicurezza per banche e operatori crypto<span class="tick-sep">■</span></span><span class="tick-item">Tether avrebbe versato 6,3 milioni alla società di Bo Hines durante la legge stablecoin<span class="tick-sep">■</span></span><span class="tick-item">Crypto, due ondate di liquidazioni a ottobre: bitcoin ed ether sotto pressione<span class="tick-sep">■</span></span><span class="tick-item">L&#x27;Eba classifica l&#x27;Usdc di Circle come token significativo: vigilanza congiunta con la Francia<span class="tick-sep">■</span></span><span class="tick-item">Chainlink attiva gli oracoli nativi su Stellar, con 3,54 miliardi di asset reali tokenizzati<span class="tick-sep">■</span></span><span class="tick-item">BingX EU ottiene dalla FMA austriaca la licenza MiCA, ma senza data di lancio<span class="tick-sep">■</span></span><span class="tick-item">Il rapporto OCC sul debanking: politiche restrittive accertate, nessun caso cripto documentato<span class="tick-sep">■</span></span></div>
+  </div>
+
+  <nav class="chips"><button class="chip on">TUTTO</button><button class="chip">MERCATI</button><button class="chip">REGOLAMENTAZIONE</button><button class="chip">SICUREZZA</button><button class="chip">INFRASTRUTTURE</button><button class="chip">FINANZA TRADIZIONALE</button><button class="chip">ALTRO</button></nav>
+
+  <div class="layout">
+    <section>
+      <div class="sectlabel"><span class="mono">Apertura · giovedì 15 ottobre 2026</span></div>
+      <article class="story big" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/872f062b-148a-436c-ac51-3dcd3b6c85e6/d9db79eb-231b-4b43-9a1f-38ebeb3e2a44.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Hyperliquid, liquidato l&#x27;account di Machi Big Brother: da 12,25 milioni a 21.800 dollari</h2>
+    <p class="dek">Il trader Jeffrey Huang ha perso quasi tutto il capitale accumulato in quattro mesi su Hyperliquid, mentre il mercato crypto registra vendite diffuse e Bitcoin scende sotto gli 81.000 dollari.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">12:16 UTC</span></div>
+  </div>
+</article>
+      <div class="grid"><article class="story" data-sector="SICUREZZA">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/f04f7296-f98f-4be6-b1aa-d9ed9bad8c5e/05c45d58-98e1-4d75-b0ea-035e87f4e3a6.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">SICUREZZA</span></div>
+  <div class="body">
+    <h2>Seul stringe i requisiti di cybersicurezza per banche e operatori crypto</h2>
+    <p class="dek">La Financial Services Commission propone verifiche più frequenti e maggiore responsabilità per i dirigenti, dopo aver rilevato vulnerabilità in 130 delle 555 società finanziarie esaminate.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">10:15 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/ce3a4b8f-c1cf-4dc0-9f1b-17657c810096/6ca0a811-4adc-4e37-b73c-5efed670a35c.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Tether avrebbe versato 6,3 milioni alla società di Bo Hines durante la legge stablecoin</h2>
+    <p class="dek">Secondo il Wall Street Journal, i pagamenti a Nxum, società cofondata dal consigliere crypto della Casa Bianca, sarebbero iniziati mentre si preparava il quadro federale sulle stablecoin.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">08:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/c873b01f-d7b7-4946-968f-ad52e881a2fc/8b9a7120-0670-42b8-9d81-27db3b3df9d3.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Crypto, due ondate di liquidazioni a ottobre: bitcoin ed ether sotto pressione</h2>
+    <p class="dek">Il 15 ottobre le chiusure su bitcoin ed ether hanno sfiorato i 483 milioni di dollari; una settimana prima la discesa sotto gli 81.000 dollari aveva innescato oltre un miliardo di liquidazioni in 24 ore.</p>
+    <div class="meta"><span class="mono">sintesi di 4 fonti</span><span class="dot">·</span><span class="mono">07:15 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="REGOLAMENTAZIONE">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/ba310df6-dac1-40bf-91e2-0927732aa538/19c48bc5-d1ea-4634-90ad-1da7f7e97e55.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">REGOLAMENTAZIONE</span></div>
+  <div class="body">
+    <h2>L&#x27;Eba classifica l&#x27;Usdc di Circle come token significativo: vigilanza congiunta con la Francia</h2>
+    <p class="dek">Primo tra 45 e-money token notificati nell&#x27;Unione, il token ancorato al dollaro passa sotto la vigilanza dell&#x27;Eba e dell&#x27;Acpr francese: riserve, liquidità e piani di rimborso al centro.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">07:15 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="INFRASTRUTTURE">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/a9362199-d6e6-4bbe-aff2-e6f69ec3c091/2547a3be-818c-4d3f-95bc-f72081c10779.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">INFRASTRUTTURE</span></div>
+  <div class="body">
+    <h2>Chainlink attiva gli oracoli nativi su Stellar, con 3,54 miliardi di asset reali tokenizzati</h2>
+    <p class="dek">I Data Feeds e i Data Streams sono operativi dal 14 ottobre 2026 sulla mainnet della rete, mentre la fondazione copre i costi degli oracoli e XLM resta in calo</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">04:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="FINANZA TRADIZIONALE">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/79c357ce-9479-4916-9c89-047ca42192bd/85b199a2-9a4b-4818-b116-24258da42e9f.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">FINANZA TRADIZIONALE</span></div>
+  <div class="body">
+    <h2>BingX EU ottiene dalla FMA austriaca la licenza MiCA, ma senza data di lancio</h2>
+    <p class="dek">L&#x27;autorizzazione come fornitore di servizi di cripto-attività copre custodia, scambio e intermediazione in 29 Paesi dello Spazio economico europeo, ma BingX EU non ha ancora indicato quando i servizi saranno operativi.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">03:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="REGOLAMENTAZIONE">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/ab1c3acc-8f6f-433f-95e6-42f3f95d63a1/606a8846-3126-47c1-91c2-2af6fee229cd.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">REGOLAMENTAZIONE</span></div>
+  <div class="body">
+    <h2>Il rapporto OCC sul debanking: politiche restrittive accertate, nessun caso cripto documentato</h2>
+    <p class="dek">Nove istituti vigilati avevano regole che limitavano i servizi alle imprese di asset digitali; il regolatore federale non quantifica però quanti rapporti bancari siano stati interrotti.</p>
+    <div class="meta"><span class="mono">sintesi di 3 fonti</span><span class="dot">·</span><span class="mono">02:15 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="REGOLAMENTAZIONE">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/02096415-3bec-4e43-86f7-df145d788dbb/6d116e30-abb5-46cc-87f5-44ae0d27a80b.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">REGOLAMENTAZIONE</span></div>
+  <div class="body">
+    <h2>Sberbank entra nel registro della banca centrale russa per l&#x27;exchange di criptovalute</h2>
+    <p class="dek">La Bank of Russia autorizza la maggiore banca del Paese a negoziare valute digitali in nome proprio; il lancio dei prodotti crypto è previsto a dicembre, subordinato alle norme secondarie.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">01:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/0cb9a952-3c1f-4f23-97a8-297eac4ebdb1/5c3302dd-5ada-45f0-84a1-a743d754cfd4.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Strive supera Strategy negli acquisti di Bitcoin, BitMine accelera su Ethereum</h2>
+    <p class="dek">Due società quotate guidano l&#x27;accumulo di criptovalute: Strive compra 3.311 Bitcoin in una settimana, Strategy ne annuncia 250 e BitMine si avvicina al 5% dell&#x27;offerta di Ethereum.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">01:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/cf79fd78-b81e-40ec-a85d-04aaf63428c0/0d1a0159-702b-4f58-ad84-bc48c34004a6.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>XRP: cresce il divario dei prelievi delle balene su Binance, prezzo sotto 1,40 dollari</h2>
+    <p class="dek">La media a sette giorni del divario tra deflussi delle balene e deflussi retail su Binance sale di 10,5 punti in sei giorni, mentre il prezzo resta sotto la resistenza di 1,40 dollari.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">20:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/059c2fdd-2905-4aad-9a16-1c6ad116b884/c00c0d58-38c2-4d51-a69e-ffcdff7080ce.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Una balena Ethereum del 2016 deposita 6.369 ETH su Kraken senza confermare la vendita</h2>
+    <p class="dek">Il trasferimento verso l&#x27;exchange, avvenuto in due transazioni, non equivale a una cessione: il costo medio d&#x27;acquisto risale al 2016, quando l&#x27;ether valeva circa 14 dollari.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">19:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/f90068ba-8604-490a-bfa5-99319192d0c5/b3d0d121-bed9-40d8-94c4-fbd8e2b052ad.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>CryptoQuant: balene Bitcoin a 3,03 milioni di BTC, indice Bull Score a 80</h2>
+    <p class="dek">L&#x27;analisi di CryptoQuant indica un ritorno all&#x27;accumulo delle grandi detenzioni e un miglioramento degli indicatori on-chain, mentre Bitwise segnala un terzo trimestre in forte recupero.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">15:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/fd797d98-44dd-4f96-ae30-1827791c5057/09a63776-269e-4ac8-bedb-291fa033dc49.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Cpi Usa a 3,7%: Bitcoin sotto 82mila dollari, tornano le scommesse sulla Fed</h2>
+    <p class="dek">Il dato sull&#x27;inflazione di settembre, sopra le attese, ha ridato fiato alle ipotesi di un rialzo dei tassi a ottobre e ha trascinato al ribasso Bitcoin, Ethereum e le principali altcoin.</p>
+    <div class="meta"><span class="mono">sintesi di 14 fonti</span><span class="dot">·</span><span class="mono">14:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/1194f73b-1954-42eb-a73e-097cc1a46600/5b509a08-15a4-44e9-8f9c-0370bbbf442e.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Hypercall, sull&#x27;exchange Hyperliquid le opzioni sull&#x27;S&amp;P 500 dominano i volumi</h2>
+    <p class="dek">La piattaforma di opzioni on-chain attiva da giugno 2026 ha visto concentrarsi sull&#x27;indice azionario americano la maggior parte dei volumi nozionali, con regolamento in USDC e scadenze anche nei fine settimana.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">13:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="REGOLAMENTAZIONE">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/7f7ced86-54e0-4b91-b4c8-9fdf64c28626/fc1224a6-5512-4f2c-8f58-4c901b39b997.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">REGOLAMENTAZIONE</span></div>
+  <div class="body">
+    <h2>Governance token, ScopeLift: il valore deve superare quanto un attacco può sottrarre</h2>
+    <p class="dek">Ben DiFrancesco, ceo di ScopeLift, sostiene che la paura delle norme sui titoli abbia plasmato una generazione di token privi di valore e che quel vincolo si stia allentando.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">06:17 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/1795fed1-87a0-4ee4-9c5b-2ee54f668628/9fd372cd-4ed1-4c28-a487-2b6f5ad28d3f.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Bitcoin oscillante sopra 83.500 dollari, deflussi ETF settimanali ai massimi da giugno</h2>
+    <p class="dek">I fondi quotati sul bitcoin registrano 681 milioni di dollari di deflussi netti settimanali, il massimo da giugno, mentre i token minori sovraperformano e il petrolio arretra.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">12:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/1bbc6836-f9cb-4ca7-9833-4fe1d8f32079/09236b53-ea61-4c0a-898b-da110a20e094.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Starknet, il token STRK corre sull&#x27;ipotesi di una Layer 1 indipendente</h2>
+    <p class="dek">Il token della rete Starknet ha più che raddoppiato il valore in una settimana e quadruplicato in un mese, mentre l&#x27;uscita da Ethereum verso una blockchain Layer 1 resta solo una proposta.</p>
+    <div class="meta"><span class="mono">sintesi di 2 fonti</span><span class="dot">·</span><span class="mono">08:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="MERCATI">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/aadbc1b1-fba2-464d-b418-045b782d2179/a0c7de3e-a580-4222-959f-009317097858.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
+  <div class="body">
+    <h2>Kraken riceve 4.393 ETH: il decennale flusso di tesoreria della Ethereum Foundation</h2>
+    <p class="dek">Due indirizzi riconducibili alla fondazione che sostiene lo sviluppo di Ethereum hanno depositato 4.393 ETH su un exchange centralizzato, senza chiarire la finalità dell&#x27;operazione.</p>
+    <div class="meta"><span class="mono">sintesi di 3 fonti</span><span class="dot">·</span><span class="mono">04:16 UTC</span></div>
+  </div>
+</article><article class="story" data-sector="ALTRO">
+  <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/6cbb7946-75bc-4031-99b9-e2e9b980c076/1afbb08c-29a3-4422-af45-862145b85e28.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">ALTRO</span></div>
+  <div class="body">
+    <h2>Evernorth debutta al Nasdaq con 473 milioni di XRP e un vincolo contabile</h2>
+    <p class="dek">La società sostenuta da Ripple completa la fusione SPAC e si prepara a quotarsi con il ticker XRPN, portando in Borsa una riserva di XRP e un modello contabile che non ammette rivalutazioni.</p>
+    <div class="meta"><span class="mono">sintesi di 4 fonti</span><span class="dot">·</span><span class="mono">02:16 UTC</span></div>
+  </div>
+</article></div>
+    </section>
+
+    <aside class="rail">
+      <div class="card">
+        <h3>Briefing di oggi: 10</h3>
+        <div class="mono">58 fonti · fino a 4 lingue per sintesi</div>
+        <div class="legend mono">Fonti per briefing</div>
+        <div class="bar-row"><span class="mono label">15/10 12:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 10:15</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 08:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 07:15</span><span class="bar" style="width:29%"></span><span class="mono val">4</span></div><div class="bar-row"><span class="mono label">15/10 07:15</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 04:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 03:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 02:15</span><span class="bar" style="width:21%"></span><span class="mono val">3</span></div>
+        <div class="legend"><span class="mono">Quante testate diverse sostengono ogni sintesi. Dato del feed (sourceCount).</span></div>
+      </div>
+      <div class="card discl">
+        <div class="mono">Trasparenza</div>
+        <h3>Sintesi assistita dall’IA</h3>
+        <p>Una lettura essenziale per orientarsi tra notizie e fonti.</p>
+        <p class="mono">Policy AI-T1 · revisione: automated_only · immagini immagine generata con l’ia</p>
+        <p><a href="https://prismanews.news/it/how-prismanews-works">Scopri di più →</a></p>
+      </div>
+      <div class="card">
+        <div class="mono">Come leggere questa pagina</div>
+        <p style="font-size:16px;color:var(--ink-2);margin:8px 0 0">Ogni titolo è una sintesi multi-fonte: il numero accanto dice quante testate la sostengono. Le categorie sono una proposta di navigazione, non un dato del feed (che ha tag quasi vuoti).</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="foot">
+    <span class="mono">Prototipo non pubblicato · dati: feed Refracto Cripto Capitale (staging) · generato il 15/10/2026 16:52</span>
+    <span class="mono">20 item nel feed · finestra 12–15 ottobre 2026</span>
+  </div>
+</div>
+</body>
+</html>
