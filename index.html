@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html lang="it" data-theme="prisma">
+<html lang="it" data-theme="cripto">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cripto Capitale — briefing di giovedì 15 ottobre 2026</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..500&family=Fraunces:opsz,wght@9..144,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..500&family=Fraunces:opsz,wght@9..144,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<meta name="robots" content="noindex,nofollow">
 <style>
 /* ============ DESIGN SYSTEM — due temi ============
    tema "prisma"  = token letti da prismanews.com/en il 15/10/2026: carta #f4eddc, inchiostro #1b1714,
@@ -16,15 +17,20 @@
                     #181A20 / superfici #202630 · #29313D · bordi #333B47 · testo #EAECEF · unico accento #FCD535
                     · semantici #2EBD85 / #F6465D, font IBM Plex Sans.                        */
 :root{
-  --bg:#f4eddc; --paper:#faf6ec; --ink:#1b1714; --ink-2:#3d362e; --muted:#7b7263;
-  --line:#d8cfbc; --line-2:#c9bfa8; --accent:#b9091b; --accent-2:#b82027; --teal:#0096a7; --amber:#cfa200;
-  --display:"Fraunces",Georgia,serif; --body:"Newsreader",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
-  --body-size:19px; --maxw:1280px;
-}
-html[data-theme="cripto"]{
-  --bg:#181A20; --paper:#202630; --ink:#EAECEF; --ink-2:#EAECEF; --muted:#929AA5;
-  --line:#333B47; --line-2:#333B47; --accent:#FCD535; --accent-2:#F0B90B; --teal:#2EBD85; --amber:#FCD535;
+  --bg:#181A20; --paper:#202630; --surface-2:#29313D; --ink:#EAECEF; --ink-2:#EAECEF; --muted:#929AA5; --muted-2:#707A8A;
+  --line:#333B47; --line-2:#434C5A; --accent:#FCD535; --accent-2:#F0B90B; --on-accent:#202630; --bar:#FCD535;
+  --chip-bg:#29313D; --chip-border:#434C5A; --badge-sec-bg:#29313D; --badge-sec-ink:#EAECEF;
   --display:"IBM Plex Sans",Arial,sans-serif; --body:"IBM Plex Sans",Arial,sans-serif; --mono:"IBM Plex Sans",Arial,sans-serif;
+  --body-size:16px; --dek-size:15px; --h2:24px; --h2-big:40px; --h2-grid:18px; --h2-small:19px;
+  --chip-radius:4px; --card-radius:10px; --ctrl-radius:4px; --maxw:1280px;
+}
+html[data-theme="prisma"]{
+  --bg:#f4eddc; --paper:#faf6ec; --surface-2:#f4eddc; --ink:#1b1714; --ink-2:#3d362e; --muted:#7b7263; --muted-2:#7b7263;
+  --line:#d8cfbc; --line-2:#c9bfa8; --accent:#b9091b; --accent-2:#b82027; --on-accent:#ffffff; --bar:#0096a7;
+  --chip-bg:transparent; --chip-border:#c9bfa8; --badge-sec-bg:rgba(244,237,220,.92); --badge-sec-ink:#1b1714;
+  --display:"Fraunces",Georgia,serif; --body:"Newsreader",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --body-size:19px; --dek-size:16px; --h2:27px; --h2-big:40px; --h2-grid:19px; --h2-small:19px;
+  --chip-radius:999px; --card-radius:0px; --ctrl-radius:0px;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--body-size);line-height:1.45}
@@ -38,9 +44,9 @@ a{color:inherit}
 .brand .mark{width:26px;height:26px;background:var(--accent);display:inline-block;clip-path:polygon(50% 0,100% 100%,0 100%)}
 .brand small{font-family:var(--mono);font-size:11.5px;font-weight:400;color:var(--muted);letter-spacing:.14em}
 .actions{display:flex;align-items:center;gap:14px}
-.icon{width:34px;height:34px;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:12px;background:transparent;color:var(--ink);cursor:pointer}
+.icon{width:34px;height:34px;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:12px;background:transparent;color:var(--ink);cursor:pointer;border-radius:var(--ctrl-radius)}
 .icon.wide{width:auto;padding:0 12px}
-.toggle{border:1px solid var(--line);background:transparent;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:9px 12px;cursor:pointer}
+.toggle{border:1px solid var(--line);background:transparent;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:9px 12px;cursor:pointer;border-radius:var(--ctrl-radius)}
 
 /* edition */
 .edition{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -48,7 +54,7 @@ a{color:inherit}
 
 /* ticker */
 .ticker{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding:12px 0;overflow:hidden}
-.tick-label{background:var(--accent);color:#fff;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:5px 9px;white-space:nowrap;position:relative;z-index:2}
+.tick-label{background:var(--accent);color:var(--on-accent);font-weight:600;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:5px 9px;white-space:nowrap;position:relative;z-index:2}
 .tick-wrap{flex:1;overflow:hidden;min-width:0}
 .tick-track{display:flex;gap:22px;white-space:nowrap;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;animation:slide 70s linear infinite}
 .tick-sep{color:var(--accent);margin-left:22px}
@@ -57,11 +63,8 @@ a{color:inherit}
 
 /* chips */
 .chips{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--line)}
-.chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;padding:9px 16px;border:1px solid var(--line-2);background:transparent;color:var(--ink);border-radius:999px;cursor:pointer}
-.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-html[data-theme="cripto"] .chip.on{color:#202630;font-weight:600}
-html[data-theme="cripto"] .tick-label{color:#202630;font-weight:700}
-html[data-theme="cripto"] .badge-sec{background:#29313D;color:#EAECEF}
+.chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;padding:9px 16px;border:1px solid var(--chip-border);background:var(--chip-bg);color:var(--ink);border-radius:var(--chip-radius);cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
 
 /* layout */
 .layout{display:grid;grid-template-columns:1fr 360px;gap:32px;padding:24px 0 40px}
@@ -78,24 +81,23 @@ html[data-theme="cripto"] .thumb img{filter:saturate(.7) brightness(.68) contras
 html[data-theme="prisma"] .thumb:after{background:linear-gradient(180deg,rgba(244,237,220,.06),rgba(27,23,20,.10))}
 html[data-theme="cripto"] .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.10),rgba(24,26,32,.42))}
 .badge-ai,.badge-sec{position:absolute;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:4px 7px}
-.badge-ai{top:10px;left:10px;background:var(--accent);color:#fff}
-html[data-theme="cripto"] .badge-ai{color:#202630;font-weight:700}
-.badge-sec{bottom:10px;left:10px;background:rgba(244,237,220,.92);color:#1b1714}
-h2{font-family:var(--display);font-weight:700;letter-spacing:-.015em;line-height:1.12;margin:14px 0 8px;font-size:27px}
-.story.big h2{font-size:40px;margin-top:16px}
+.badge-ai{top:10px;left:10px;background:var(--accent);color:var(--on-accent);font-weight:600}
+.badge-sec{bottom:10px;left:10px;background:var(--badge-sec-bg);color:var(--badge-sec-ink)}
+h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height:1.15;margin:14px 0 8px;font-size:var(--h2)}
+.story.big h2{font-size:var(--h2-big);margin-top:16px}
 .dek{margin:0 0 10px;color:var(--ink-2)}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:34px;border-top:1px solid var(--line);padding-top:26px}
 .grid .thumb img{width:100%;height:150px;object-fit:cover;display:block}
-.grid h2{font-size:19px;margin-top:12px}
-.grid .dek{font-size:16px;color:var(--ink-2)}
+.grid h2{font-size:var(--h2-grid);margin-top:12px}
+.grid .dek{font-size:var(--dek-size);color:var(--ink-2)}
 .dot{margin:0 6px}
 
 /* rail */
 .rail{display:flex;flex-direction:column;gap:18px}
-.card{border:1px solid var(--line);background:var(--paper);padding:18px}
+.card{border:1px solid var(--line);background:var(--paper);padding:18px;border-radius:var(--card-radius)}
 .card h3{font-family:var(--display);font-size:21px;margin:0 0 4px}
 .bar-row{display:grid;grid-template-columns:104px 1fr 26px;align-items:center;gap:8px;margin:7px 0}
-.bar{height:9px;background:var(--teal)}
+.bar{height:9px;background:var(--bar);border-radius:2px}
 .bar-row .val{text-align:right}
 .bar-row .label{white-space:nowrap}
 .legend{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
@@ -300,7 +302,7 @@ h2{font-family:var(--display);font-weight:700;letter-spacing:-.015em;line-height
   </div>
 
   <div class="foot">
-    <span class="mono">Prototipo non pubblicato · dati: feed Refracto Cripto Capitale (staging) · generato il 15/10/2026 17:02</span>
+    <span class="mono">Prototipo non pubblicato · dati: feed Refracto Cripto Capitale (staging) · generato il 15/10/2026 17:08</span>
     <span class="mono">20 item nel feed · finestra 12–15 ottobre 2026</span>
   </div>
 </div>
