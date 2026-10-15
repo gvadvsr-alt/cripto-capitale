@@ -152,6 +152,28 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
 .modal-body a{color:var(--accent)}
 .modal-close{float:right;font-family:var(--mono);font-size:11px;letter-spacing:.1em;border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 11px;cursor:pointer;border-radius:var(--ctrl-radius)}
 .proto{border:1px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;padding:3px 7px;border-radius:2px}
+/* mobile: stessa pagina, una colonna */
+@media (max-width:1000px){
+  .wrap{padding:0 16px}
+  .layout{grid-template-columns:1fr;gap:22px;padding:18px 0 30px}
+  .grid{grid-template-columns:1fr 1fr;gap:18px}
+  .story.big .thumb img{height:230px}
+  .story.big h2{font-size:calc(var(--h2-big)*.72)}
+  .topbar{flex-wrap:wrap;gap:10px}
+  .brand{font-size:18px}
+  .actions{gap:6px;flex-wrap:wrap}
+  .icon{height:32px;min-width:32px;padding:0 8px;font-size:11px}
+  #searchbox{min-width:0;flex:1 1 100%}
+  .tick-track{animation-duration:45s}
+  .modal{padding:14px}
+  .modal-card{padding:18px 16px 24px}
+  .modal-card h2{font-size:calc(24px*var(--scale))}
+}
+@media (max-width:680px){
+  .grid{grid-template-columns:1fr}
+  .brand small{display:none}
+  .bar-row{grid-template-columns:92px 1fr 22px}
+}
 """
 
 JS = """
