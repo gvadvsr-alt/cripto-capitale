@@ -148,6 +148,14 @@ html[data-theme="cripto"] .badge-sec{{background:#29313D;color:#EAECEF}}
 .sectlabel:after{{content:"";flex:1;height:1px;background:var(--line)}}
 .story.big .thumb img{{width:100%;height:340px;object-fit:cover;object-position:center 30%;display:block}}
 .thumb{{position:relative;overflow:hidden;background:var(--line)}}
+/* le immagini AI del feed sono chiare e fuori gamma: le porto dentro il tema con un grade,
+   non le rigenero (per quello serve un modello di immagini: vedi nota nel footer) */
+.thumb img{{transition:filter .25s;display:block}}
+html[data-theme="prisma"] .thumb img{{filter:saturate(.9) contrast(1.03) sepia(.08) brightness(.99)}}
+html[data-theme="cripto"] .thumb img{{filter:saturate(.7) brightness(.68) contrast(1.1)}}
+.thumb:after{{content:"";position:absolute;inset:0;pointer-events:none}}
+html[data-theme="prisma"] .thumb:after{{background:linear-gradient(180deg,rgba(244,237,220,.06),rgba(27,23,20,.10))}}
+html[data-theme="cripto"] .thumb:after{{background:linear-gradient(180deg,rgba(24,26,32,.10),rgba(24,26,32,.42))}}
 .badge-ai,.badge-sec{{position:absolute;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:4px 7px}}
 .badge-ai{{top:10px;left:10px;background:var(--accent);color:#fff}}
 html[data-theme="cripto"] .badge-ai{{color:#202630;font-weight:700}}
