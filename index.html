@@ -15,7 +15,7 @@
   --line:#333B47; --line-2:#434C5A; --accent:#FCD535; --accent-2:#F0B90B; --on-accent:#202630; --bar:#FCD535;
   --chip-bg:#29313D; --chip-border:#434C5A; --badge-sec-bg:#29313D; --badge-sec-ink:#EAECEF;
   --display:"IBM Plex Sans",Arial,sans-serif; --body:"IBM Plex Sans",Arial,sans-serif; --mono:"IBM Plex Sans",Arial,sans-serif;
-  --body-size:16px; --dek-size:15px; --h2:24px; --h2-big:40px; --h2-grid:18px;
+  --body-size:16px; --dek-size:16px; --h2:24px; --h2-big:54px; --h2-grid:18px; --stat:58px;
   --chip-radius:4px; --card-radius:10px; --ctrl-radius:4px; --maxw:1280px; --scale:1;
 }
 html[data-theme="prisma"]{
@@ -24,7 +24,7 @@ html[data-theme="prisma"]{
   --line:#d8cfbc; --line-2:#c9bfa8; --accent:#b9091b; --accent-2:#b82027; --on-accent:#ffffff; --bar:#0096a7;
   --chip-bg:transparent; --chip-border:#c9bfa8; --badge-sec-bg:rgba(244,237,220,.92); --badge-sec-ink:#1b1714;
   --display:"Fraunces",Georgia,serif; --body:"Newsreader",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
-  --body-size:19px; --dek-size:16px; --h2:27px; --h2-big:40px; --h2-grid:19px;
+  --body-size:19px; --dek-size:16px; --h2:27px; --h2-big:54px; --h2-grid:19px; --stat:58px;
   --chip-radius:999px; --card-radius:0px; --ctrl-radius:0px;
 }
 *{box-sizing:border-box}
@@ -65,11 +65,12 @@ body[data-lang="en"] [data-lang="it"]{display:none}
 .story.big .thumb img{width:100%;height:340px;object-fit:cover;object-position:center 30%;display:block}
 .thumb{position:relative;overflow:hidden;background:var(--line)}
 .thumb img{transition:filter .25s;display:block}
-html[data-theme="prisma"] .thumb img{filter:saturate(.9) contrast(1.03) sepia(.08) brightness(.99)}
-html[data-theme="cripto"] .thumb img{filter:saturate(.7) brightness(.68) contrast(1.1)}
+html[data-theme="prisma"] .thumb img{filter:saturate(.9) contrast(1.03) sepia(.08) brightness(.99);transition:filter .35s, transform .45s}
+html[data-theme="cripto"] .thumb img{filter:grayscale(.4) saturate(.85) brightness(.62) contrast(1.16);transition:filter .35s, transform .45s}
+html[data-theme="cripto"] .story:hover .thumb img{filter:grayscale(.2) saturate(.95) brightness(.78) contrast(1.1)}
 .thumb:after{content:"";position:absolute;inset:0;pointer-events:none}
 html[data-theme="prisma"] .thumb:after{background:linear-gradient(180deg,rgba(244,237,220,.06),rgba(27,23,20,.10))}
-html[data-theme="cripto"] .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.10),rgba(24,26,32,.42))}
+html[data-theme="cripto"] .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.06),rgba(24,26,32,.48)),linear-gradient(0deg,rgba(252,213,53,.10),rgba(252,213,53,.03));pointer-events:none}
 .badge-ai,.badge-sec{position:absolute;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:4px 7px;border-radius:2px}
 .badge-ai{top:10px;left:10px;background:var(--accent);color:var(--on-accent);font-weight:600}
 .badge-sec{bottom:10px;left:10px;background:var(--badge-sec-bg);color:var(--badge-sec-ink)}
@@ -82,7 +83,23 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
 .grid .dek{font-size:var(--dek-size);color:var(--ink-2)}
 .dot{margin:0 6px}
 .empty{padding:26px 0;color:var(--muted);font-family:var(--mono);font-size:12px}
-.rail{display:flex;flex-direction:column;gap:18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:28px 0 26px;border-bottom:1px solid var(--line)}
+.stat .n{font-family:var(--display);font-weight:700;font-size:var(--stat);line-height:.95;color:var(--accent);letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.stat .n small{font-size:.42em;font-weight:600;letter-spacing:0}
+.stat .k{display:block;margin-top:6px}
+.story .thumb img{will-change:transform}
+.story:hover .thumb img{transform:scale(1.045)}
+.story.big .thumb img{height:430px}
+.story.big .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.02) 40%,rgba(24,26,32,.55))}
+html[data-theme="prisma"] .story.big .thumb:after{background:linear-gradient(180deg,rgba(244,237,220,.02) 40%,rgba(27,23,20,.42))}
+.story.big .body{border-bottom:1px solid var(--line);padding-bottom:22px}
+.story.big h2{text-wrap:balance}
+.story.big .dek{font-size:calc(var(--dek-size)*1.05)}
+.card h3{font-size:24px}
+.bignum{font-family:var(--display);font-weight:700;font-size:46px;line-height:1;color:var(--accent);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.bar{height:12px;background:var(--bar);border-radius:2px;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.bar-row:hover .bar{background:var(--accent-2)}
+
 .card{border:1px solid var(--line);background:var(--paper);padding:18px;border-radius:var(--card-radius)}
 .card h3{font-family:var(--display);font-size:21px;margin:0 0 4px}
 .bar-row{display:grid;grid-template-columns:104px 1fr 26px;align-items:center;gap:8px;margin:7px 0}
@@ -151,6 +168,12 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
   <nav class="chips" data-lang="it"><button class="chip" data-sector="all" onclick="setSector('all')">TUTTO</button><button class="chip" data-sector="MERCATI" onclick="setSector('MERCATI')">MERCATI</button><button class="chip" data-sector="REGOLAMENTAZIONE" onclick="setSector('REGOLAMENTAZIONE')">REGOLAMENTAZIONE</button><button class="chip" data-sector="SICUREZZA" onclick="setSector('SICUREZZA')">SICUREZZA</button><button class="chip" data-sector="INFRASTRUTTURE" onclick="setSector('INFRASTRUTTURE')">INFRASTRUTTURE</button><button class="chip" data-sector="FINANZA TRADIZIONALE" onclick="setSector('FINANZA TRADIZIONALE')">FINANZA TRADIZIONALE</button><button class="chip" data-sector="ALTRO" onclick="setSector('ALTRO')">ALTRO</button></nav>
   <div class="layout">
     <section data-stream data-lang="it">
+      <div class="stats">
+        <div class="stat"><div class="n">10</div><span class="mono k">briefing oggi</span></div>
+        <div class="stat"><div class="n">58</div><span class="mono k">fonti</span></div>
+        <div class="stat"><div class="n">14</div><span class="mono k">fonti max per sintesi</span></div>
+        <div class="stat"><div class="n">82h</div><span class="mono k">ore di copertura</span></div>
+      </div>
       <div class="sectlabel"><span class="mono">Apertura · giovedì 15 ottobre 2026</span></div>
       <article class="story big" data-sector="MERCATI" data-sector-en="MARKETS" data-text="hyperliquid, liquidato l&#x27;account di machi big brother: da 12,25 milioni a 21.800 dollari il trader jeffrey huang ha perso quasi tutto il capitale accumulato in quattro mesi su hyperliquid, mentre il mercato crypto registra vendite diffuse e bitcoin scende sotto gli 81.000 dollari." tabindex="0" role="button" onclick="openStory('ed189022-a5aa-4745-9ba6-9e88542a3ec0')" onkeydown="if(event.key==='Enter')openStory('ed189022-a5aa-4745-9ba6-9e88542a3ec0')">
   <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/872f062b-148a-436c-ac51-3dcd3b6c85e6/d9db79eb-231b-4b43-9a1f-38ebeb3e2a44.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">MERCATI</span></div>
@@ -298,8 +321,9 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
     </section>
     <aside class="rail" data-lang="it">
       <div class="card">
-        <h3>Briefing di oggi: 10</h3>
-        <div class="mono">58 fonti · fonti max per sintesi: 14</div>
+        <h3>Briefing di oggi</h3>
+        <div class="bignum">10</div>
+        <div class="mono">58 fonti · 82h ore di copertura</div>
         <div class="legend mono">Fonti per briefing</div>
         <div class="bar-row"><span class="mono label">15/10 12:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 10:15</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 08:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 07:15</span><span class="bar" style="width:29%"></span><span class="mono val">4</span></div><div class="bar-row"><span class="mono label">15/10 07:15</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 04:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 03:16</span><span class="bar" style="width:14%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 02:15</span><span class="bar" style="width:21%"></span><span class="mono val">3</span></div>
         <div class="legend"><span class="mono">Quante testate diverse sostengono ogni sintesi. Dato del feed (sourceCount).</span></div>
@@ -329,6 +353,12 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
   <nav class="chips" data-lang="en"><button class="chip" data-sector="all" onclick="setSector('all')">ALL</button><button class="chip" data-sector="MARKETS" onclick="setSector('MARKETS')">MARKETS</button><button class="chip" data-sector="REGULATION" onclick="setSector('REGULATION')">REGULATION</button><button class="chip" data-sector="SECURITY" onclick="setSector('SECURITY')">SECURITY</button><button class="chip" data-sector="INFRASTRUCTURE" onclick="setSector('INFRASTRUCTURE')">INFRASTRUCTURE</button><button class="chip" data-sector="TRADFI" onclick="setSector('TRADFI')">TRADFI</button><button class="chip" data-sector="OTHER" onclick="setSector('OTHER')">OTHER</button></nav>
   <div class="layout">
     <section data-stream data-lang="en">
+      <div class="stats">
+        <div class="stat"><div class="n">11</div><span class="mono k">briefings today</span></div>
+        <div class="stat"><div class="n">59</div><span class="mono k">sources</span></div>
+        <div class="stat"><div class="n">15</div><span class="mono k">max sources per briefing</span></div>
+        <div class="stat"><div class="n">34h</div><span class="mono k">hours covered</span></div>
+      </div>
       <div class="sectlabel"><span class="mono">Top story · Thursday 15 October 2026</span></div>
       <article class="story big" data-sector="REGOLAMENTAZIONE" data-sector-en="REGULATION" data-text="qivalis gains dutch emi licence as euro stablecoin awaits mica steps the amsterdam-based consortium can operate as an electronic money institution, yet its planned euro token is not circulating and issuance depends on mica requirements and a white paper." tabindex="0" role="button" onclick="openStory('e5ec3519-d483-4f65-8011-73807b3509cd')" onkeydown="if(event.key==='Enter')openStory('e5ec3519-d483-4f65-8011-73807b3509cd')">
   <div class="thumb"><img src="https://creator-staging.refracto.ai/api/assets/tenants/0a64caf6-5226-47ba-be77-341a2e713591/images/30720efd-a7c6-4cc6-a5b8-e64cdc72ba1b/cd4d2d98-ed0c-42b5-b8ce-1b68997d4f38.jpg" alt="" loading="lazy"><span class="badge-ai">IA</span><span class="badge-sec">REGULATION</span></div>
@@ -476,8 +506,9 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
     </section>
     <aside class="rail" data-lang="en">
       <div class="card">
-        <h3>Today's briefings: 11</h3>
-        <div class="mono">59 sources · max sources per briefing: 15</div>
+        <h3>Today's briefings</h3>
+        <div class="bignum">11</div>
+        <div class="mono">59 sources · 34h hours covered</div>
         <div class="legend mono">Sources per briefing</div>
         <div class="bar-row"><span class="mono label">15/10 14:16</span><span class="bar" style="width:13%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 13:16</span><span class="bar" style="width:20%"></span><span class="mono val">3</span></div><div class="bar-row"><span class="mono label">15/10 12:16</span><span class="bar" style="width:20%"></span><span class="mono val">3</span></div><div class="bar-row"><span class="mono label">15/10 11:15</span><span class="bar" style="width:13%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 10:15</span><span class="bar" style="width:13%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 08:17</span><span class="bar" style="width:13%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 07:15</span><span class="bar" style="width:13%"></span><span class="mono val">2</span></div><div class="bar-row"><span class="mono label">15/10 03:16</span><span class="bar" style="width:13%"></span><span class="mono val">2</span></div>
         <div class="legend"><span class="mono">How many outlets back each synthesis. Feed data (sourceCount).</span></div>
@@ -496,7 +527,7 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
     </aside>
   </div>
   <div class="foot">
-    <span class="mono">Prototipo non pubblicato · dati: feed Refracto Cripto Capitale (staging) · generato 15/10/2026 17:16</span>
+    <span class="mono">Prototipo non pubblicato · dati: feed Refracto Cripto Capitale (staging) · generato 15/10/2026 17:29</span>
     <span class="mono">20 item nel feed · finestra 12–15 ottobre 2026</span>
   </div>
 </div>

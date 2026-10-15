@@ -48,7 +48,7 @@ LABELS = {
             come_txt="Ogni titolo è una sintesi multi-fonte: il numero dice quante testate la sostengono. Le categorie sono una proposta di navigazione, non un dato del feed (che ha tag quasi vuoti). Clicca un titolo per il testo completo.",
             tutte="TUTTO", cerca="Cerca", chiudi="Chiudi", proto="Prototipo non pubblicato",
             dati="dati: feed Refracto Cripto Capitale (staging)", finestra="item nel feed · finestra 12–15 ottobre 2026",
-            brief_oggi="briefing oggi", fonte_sing="sintesi di {n} fonti"),
+            brief_oggi="briefing oggi", fonte_sing="sintesi di {n} fonti", copertura_word="ore di copertura"),
  "en": dict(ultimora="BREAKING", apertura="Top story", brief="Today's briefings", fonti="sources",
             lingua="language EN", fino="max sources per briefing", copertura="Sources per briefing",
             copertura_note="How many outlets back each synthesis. Feed data (sourceCount).",
@@ -56,7 +56,7 @@ LABELS = {
             come_txt="Every headline is a multi-source synthesis: the number shows how many outlets back it. The categories are a navigation proposal, not feed data (its tags are nearly empty). Click a headline for the full text.",
             tutte="ALL", cerca="Search", chiudi="Close", proto="Unpublished prototype",
             dati="data: Refracto Cripto Capitale feed (staging)", finestra="items in the feed · window 12–15 October 2026",
-            brief_oggi="briefings today", fonte_sing="synthesis of {n} sources"),
+            brief_oggi="briefings today", fonte_sing="synthesis of {n} sources", copertura_word="hours covered"),
 }
 
 CSS = """
@@ -66,7 +66,7 @@ CSS = """
   --line:#333B47; --line-2:#434C5A; --accent:#FCD535; --accent-2:#F0B90B; --on-accent:#202630; --bar:#FCD535;
   --chip-bg:#29313D; --chip-border:#434C5A; --badge-sec-bg:#29313D; --badge-sec-ink:#EAECEF;
   --display:"IBM Plex Sans",Arial,sans-serif; --body:"IBM Plex Sans",Arial,sans-serif; --mono:"IBM Plex Sans",Arial,sans-serif;
-  --body-size:16px; --dek-size:15px; --h2:24px; --h2-big:40px; --h2-grid:18px;
+  --body-size:16px; --dek-size:16px; --h2:24px; --h2-big:54px; --h2-grid:18px; --stat:58px;
   --chip-radius:4px; --card-radius:10px; --ctrl-radius:4px; --maxw:1280px; --scale:1;
 }
 html[data-theme="prisma"]{
@@ -75,7 +75,7 @@ html[data-theme="prisma"]{
   --line:#d8cfbc; --line-2:#c9bfa8; --accent:#b9091b; --accent-2:#b82027; --on-accent:#ffffff; --bar:#0096a7;
   --chip-bg:transparent; --chip-border:#c9bfa8; --badge-sec-bg:rgba(244,237,220,.92); --badge-sec-ink:#1b1714;
   --display:"Fraunces",Georgia,serif; --body:"Newsreader",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
-  --body-size:19px; --dek-size:16px; --h2:27px; --h2-big:40px; --h2-grid:19px;
+  --body-size:19px; --dek-size:16px; --h2:27px; --h2-big:54px; --h2-grid:19px; --stat:58px;
   --chip-radius:999px; --card-radius:0px; --ctrl-radius:0px;
 }
 *{box-sizing:border-box}
@@ -116,11 +116,12 @@ body[data-lang="en"] [data-lang="it"]{display:none}
 .story.big .thumb img{width:100%;height:340px;object-fit:cover;object-position:center 30%;display:block}
 .thumb{position:relative;overflow:hidden;background:var(--line)}
 .thumb img{transition:filter .25s;display:block}
-html[data-theme="prisma"] .thumb img{filter:saturate(.9) contrast(1.03) sepia(.08) brightness(.99)}
-html[data-theme="cripto"] .thumb img{filter:saturate(.7) brightness(.68) contrast(1.1)}
+html[data-theme="prisma"] .thumb img{filter:saturate(.9) contrast(1.03) sepia(.08) brightness(.99);transition:filter .35s, transform .45s}
+html[data-theme="cripto"] .thumb img{filter:grayscale(.4) saturate(.85) brightness(.62) contrast(1.16);transition:filter .35s, transform .45s}
+html[data-theme="cripto"] .story:hover .thumb img{filter:grayscale(.2) saturate(.95) brightness(.78) contrast(1.1)}
 .thumb:after{content:"";position:absolute;inset:0;pointer-events:none}
 html[data-theme="prisma"] .thumb:after{background:linear-gradient(180deg,rgba(244,237,220,.06),rgba(27,23,20,.10))}
-html[data-theme="cripto"] .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.10),rgba(24,26,32,.42))}
+html[data-theme="cripto"] .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.06),rgba(24,26,32,.48)),linear-gradient(0deg,rgba(252,213,53,.10),rgba(252,213,53,.03));pointer-events:none}
 .badge-ai,.badge-sec{position:absolute;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:4px 7px;border-radius:2px}
 .badge-ai{top:10px;left:10px;background:var(--accent);color:var(--on-accent);font-weight:600}
 .badge-sec{bottom:10px;left:10px;background:var(--badge-sec-bg);color:var(--badge-sec-ink)}
@@ -133,7 +134,23 @@ h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height
 .grid .dek{font-size:var(--dek-size);color:var(--ink-2)}
 .dot{margin:0 6px}
 .empty{padding:26px 0;color:var(--muted);font-family:var(--mono);font-size:12px}
-.rail{display:flex;flex-direction:column;gap:18px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:28px 0 26px;border-bottom:1px solid var(--line)}
+.stat .n{font-family:var(--display);font-weight:700;font-size:var(--stat);line-height:.95;color:var(--accent);letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.stat .n small{font-size:.42em;font-weight:600;letter-spacing:0}
+.stat .k{display:block;margin-top:6px}
+.story .thumb img{will-change:transform}
+.story:hover .thumb img{transform:scale(1.045)}
+.story.big .thumb img{height:430px}
+.story.big .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.02) 40%,rgba(24,26,32,.55))}
+html[data-theme="prisma"] .story.big .thumb:after{background:linear-gradient(180deg,rgba(244,237,220,.02) 40%,rgba(27,23,20,.42))}
+.story.big .body{border-bottom:1px solid var(--line);padding-bottom:22px}
+.story.big h2{text-wrap:balance}
+.story.big .dek{font-size:calc(var(--dek-size)*1.05)}
+.card h3{font-size:24px}
+.bignum{font-family:var(--display);font-weight:700;font-size:46px;line-height:1;color:var(--accent);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.bar{height:12px;background:var(--bar);border-radius:2px;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.bar-row:hover .bar{background:var(--accent-2)}
+
 .card{border:1px solid var(--line);background:var(--paper);padding:18px;border-radius:var(--card-radius)}
 .card h3{font-family:var(--display);font-size:21px;margin:0 0 4px}
 .bar-row{display:grid;grid-template-columns:104px 1fr 26px;align-items:center;gap:8px;margin:7px 0}
@@ -217,6 +234,7 @@ def build_blocks(items, lang, L, policy):
     tot = sum(i["_prisma"]["sourceCount"] for i in items)
     oggi = sum(1 for i in items if fmt(i["date_published"]).date() == edition.date())
     maxsrc = max(i["_prisma"]["sourceCount"] for i in items)
+    ore = round((fmt(newest["date_published"]) - fmt(items[-1]["date_published"])).total_seconds() / 3600)
     full = {}
 
     def card(it, big=False):
@@ -261,6 +279,12 @@ def build_blocks(items, lang, L, policy):
   <nav class="chips" data-lang="{lang}">{chips}</nav>
   <div class="layout">
     <section data-stream data-lang="{lang}">
+      <div class="stats">
+        <div class="stat"><div class="n">{oggi}</div><span class="mono k">{L["brief_oggi"]}</span></div>
+        <div class="stat"><div class="n">{tot}</div><span class="mono k">{L["fonti"]}</span></div>
+        <div class="stat"><div class="n">{maxsrc}</div><span class="mono k">{L["fino"]}</span></div>
+        <div class="stat"><div class="n">{ore}h</div><span class="mono k">{L["copertura_word"]}</span></div>
+      </div>
       <div class="sectlabel"><span class="mono">{L["apertura"]} · {long_date(newest["date_published"], lang)}</span></div>
       {card(newest, big=True)}
       <div class="grid">{grid}</div>
@@ -268,8 +292,9 @@ def build_blocks(items, lang, L, policy):
     </section>
     <aside class="rail" data-lang="{lang}">
       <div class="card">
-        <h3>{L["brief"]}: {oggi}</h3>
-        <div class="mono">{tot} {L["fonti"]} · {L["fino"]}: {maxsrc}</div>
+        <h3>{L["brief"]}</h3>
+        <div class="bignum">{oggi}</div>
+        <div class="mono">{tot} {L["fonti"]} · {ore}h {L["copertura_word"]}</div>
         <div class="legend mono">{L["copertura"]}</div>
         {bars}
         <div class="legend"><span class="mono">{L["copertura_note"]}</span></div>
