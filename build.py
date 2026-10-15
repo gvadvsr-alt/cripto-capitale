@@ -1,253 +1,375 @@
 #!/usr/bin/env python3
-"""Genera una pagina 'briefing' per Cripto Capitale a partire dal feed JSON di Refracto.
+"""Cripto Capitale — pagina briefing generata dai feed Refracto (JSON).
 Struttura ripresa da prismanews.com/en (15/10/2026); contenuti SOLO dal feed.
-Uso: python3 build.py <feed.json> <out.html>
+Design system di default: Binance (token letti live il 15/10/2026); il tema "prisma" resta come alternativa.
+Interattivo: filtri categoria, ricerca, testo completo, IT/EN, dimensione testo, tema.
+Uso: python3 build2.py feed.json feed-en.json index.html
 """
 import json, sys, html, re, datetime
 
-feed_path, out_path = sys.argv[1], sys.argv[2]
-d = json.load(open(feed_path, encoding="utf-8"))
-items = d["items"]
+cfg_path, feed_it, feed_en, out_path = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
+CONFIG = json.load(open(cfg_path, encoding="utf-8"))
+SLUG, NAME, BRAND_TAIL = CONFIG["slug"], CONFIG["name"], CONFIG.get("brand_tail", "· PRISMA NEWS")
+THEME_KEY = CONFIG.get("theme_key", "vertical")
 
-# --- tassonomia PROPOSTA (il feed ha tag quasi vuoti: 1 solo valore) -----------------
-SECTORS = [
-    ("MERCATI", r"bitcoin|btc|ether|eth\b|mercato|quotazion|prezzo|vendite|liquidaz|etf|indice|s&p|rally|ribass|prezz"),
-    ("REGOLAMENTAZIONE", r"regolament|norm|legge|sec\b|regolator|commissione|governo|stablecoin|genius act|autorità|vigilanza|tassa"),
-    ("SICUREZZA", r"cybersicurezza|attacc|hack|vulnerab|sicurezza|furto|exploit|dati personali|violazion"),
-    ("INFRASTRUTTURE", r"exchange|piattaforma|protocollo|blockchain|rete|hyperliquid|deribit|opzioni|derivati|wallet|stablecoin"),
-    ("FINANZA TRADIZIONALE", r"banca|bank|fondo|istituto|azione|ipo|asset manager|treasur|pension"),
-]
+SECTORS = [(x["it"], x["en"], x["re"]) for x in CONFIG["sectors"]]
+
 def sector_of(it):
-    txt = (it.get("title","") + " " + it.get("summary","")).lower()
-    for name, pat in SECTORS:
+    txt = (it.get("title", "") + " " + it.get("summary", "")).lower()
+    for it_name, en_name, pat in SECTORS:
         if re.search(pat, txt):
-            return name
-    return "ALTRO"
+            return it_name, en_name
+    return "ALTRO", "OTHER"
 
-def fmt_date(iso):
-    dt = datetime.datetime.fromisoformat(iso.replace("Z", "+00:00"))
-    return dt
+def fmt(iso):
+    return datetime.datetime.fromisoformat(iso.replace("Z", "+00:00"))
 
-def it_date(iso):
-    dt = fmt_date(iso)
-    giorni = ["lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"]
-    mesi = ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"]
-    return f"{giorni[dt.weekday()]} {dt.day} {mesi[dt.month-1]} {dt.year}"
+MONTHS = {
+ "it": (["lunedì","martedì","mercoledì","giovedì","venerdì","sabato","domenica"],
+        ["gennaio","febbraio","marzo","aprile","maggio","giugno","luglio","agosto","settembre","ottobre","novembre","dicembre"]),
+ "en": (["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+        ["January","February","March","April","May","June","July","August","September","October","November","December"]),
+}
+def long_date(iso, lang):
+    dt = fmt(iso); g, m = MONTHS[lang]
+    return f"{g[dt.weekday()]} {dt.day} {m[dt.month-1]} {dt.year}"
 
-def plain(content_html):
-    t = re.sub(r"<[^>]+>", " ", content_html or "")
-    t = html.unescape(t)
-    t = re.sub(r"\s+", " ", t).strip()
-    # togli la disclosure iniziale
-    t = re.sub(r"^.*?Scopri di più\s*", "", t, flags=re.S)
-    return t
+def strip_aside(content_html):
+    return re.sub(r"<aside[^>]*>.*?</aside>", "", content_html or "", flags=re.S).strip()
 
-newest = items[0]
-edition = fmt_date(d["items"][0]["date_published"])
-tot_fonti = sum(i["_prisma"]["sourceCount"] for i in items)
-tot_lingue = max(i["_prisma"]["languageCount"] for i in items)
-oggi = sum(1 for i in items if fmt_date(i["date_published"]).date() == edition.date())
-policy = d["_prisma"]["ai"]
+LABELS = {
+ "it": dict(ultimora="ULTIM'ORA", apertura="Apertura", brief="Briefing di oggi", fonti="fonti",
+            lingua="lingua IT", fino="fonti max per sintesi", copertura="Fonti per briefing",
+            copertura_note="Quante testate diverse sostengono ogni sintesi. Dato del feed (sourceCount).",
+            disclosure="Trasparenza", come="Come leggere questa pagina",
+            come_txt="Ogni titolo è una sintesi multi-fonte: il numero dice quante testate la sostengono. Le categorie sono una proposta di navigazione, non un dato del feed (che ha tag quasi vuoti). Clicca un titolo per il testo completo.",
+            tutte="TUTTO", cerca="Cerca", chiudi="Chiudi", proto="Prototipo non pubblicato",
+            dati="dati: feed Refracto Cripto Capitale (staging)", finestra="item nel feed · finestra 12–15 ottobre 2026",
+            brief_oggi="briefing oggi", fonte_sing="sintesi di {n} fonti", copertura_word="ore di copertura"),
+ "en": dict(ultimora="BREAKING", apertura="Top story", brief="Today's briefings", fonti="sources",
+            lingua="language EN", fino="max sources per briefing", copertura="Sources per briefing",
+            copertura_note="How many outlets back each synthesis. Feed data (sourceCount).",
+            disclosure="Disclosure", come="How to read this page",
+            come_txt="Every headline is a multi-source synthesis: the number shows how many outlets back it. The categories are a navigation proposal, not feed data (its tags are nearly empty). Click a headline for the full text.",
+            tutte="ALL", cerca="Search", chiudi="Close", proto="Unpublished prototype",
+            dati="data: Refracto Cripto Capitale feed (staging)", finestra="items in the feed · window 12–15 October 2026",
+            brief_oggi="briefings today", fonte_sing="synthesis of {n} sources", copertura_word="hours covered"),
+}
 
-def card(it, big=False):
-    s = sector_of(it)
-    dt = fmt_date(it["date_published"]).strftime("%H:%M")
-    meta = f'sintesi di {it["_prisma"]["sourceCount"]} fonti'
-    img = f'<img src="{it["image"]}" alt="" loading="lazy">' if it.get("image") else ""
-    cls = "story big" if big else "story"
-    return f'''<article class="{cls}" data-sector="{s}">
-  <div class="thumb">{img}<span class="badge-ai">IA</span><span class="badge-sec">{s}</span></div>
+CSS = """
+__ROOT_TOKENS__
+html[data-theme="prisma"]{
+  /* alternativa: token letti da prismanews.com/en */
+  --bg:#f4eddc; --paper:#faf6ec; --surface-2:#f4eddc; --ink:#1b1714; --ink-2:#3d362e; --muted:#7b7263;
+  --line:#d8cfbc; --line-2:#c9bfa8; --accent:#b9091b; --accent-2:#b82027; --on-accent:#ffffff; --bar:#0096a7;
+  --chip-bg:transparent; --chip-border:#c9bfa8; --badge-sec-bg:rgba(244,237,220,.92); --badge-sec-ink:#1b1714;
+  --display:"Fraunces",Georgia,serif; --body:"Newsreader",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --body-size:19px; --dek-size:16px; --h2:27px; --h2-big:54px; --h2-grid:19px; --stat:58px;
+  --chip-radius:999px; --card-radius:0px; --ctrl-radius:0px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:calc(var(--body-size)*var(--scale));line-height:1.45}
+body[data-lang="it"] [data-lang="en"]{display:none}
+body[data-lang="en"] [data-lang="it"]{display:none}
+.mono{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:700;letter-spacing:-.02em;font-size:22px}
+.brand .mark{width:26px;height:26px;background:var(--highlight,var(--accent));display:inline-block;clip-path:polygon(50% 0,100% 100%,0 100%)}
+.brand small{font-family:var(--mono);font-size:11.5px;font-weight:400;color:var(--muted);letter-spacing:.14em}
+.actions{display:flex;align-items:center;gap:10px}
+.icon{height:34px;min-width:34px;padding:0 10px;border:1px solid var(--line);display:inline-grid;place-items:center;font-family:var(--mono);font-size:12px;background:transparent;color:var(--ink);cursor:pointer;border-radius:var(--ctrl-radius);text-decoration:none}
+.icon:hover{border-color:var(--accent);color:var(--accent)}
+.icon.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);font-weight:600}
+#searchbox{display:none;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);font-family:var(--mono);font-size:12px;padding:9px 12px;border-radius:var(--ctrl-radius);min-width:240px}
+#searchbox.show{display:block}
+.edition{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}
+.edition .l{color:var(--accent);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
+.ticker{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding:12px 0;overflow:hidden}
+.tick-label{background:var(--highlight,var(--accent));color:var(--on-highlight,var(--on-accent));font-weight:600;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:5px 9px;white-space:nowrap;position:relative;z-index:2;border-radius:var(--ctrl-radius)}
+.tick-wrap{flex:1;overflow:hidden;min-width:0}
+.tick-track{display:flex;gap:22px;white-space:nowrap;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;animation:slide 70s linear infinite}
+.tick-sep{color:var(--accent);margin-left:22px}
+@keyframes slide{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tick-track{animation:none}}
+.chips{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--line)}
+.chip{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;padding:9px 16px;border:1px solid var(--chip-border);background:var(--chip-bg);color:var(--ink);border-radius:var(--chip-radius);cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--highlight,var(--accent));border-color:var(--highlight,var(--accent));color:var(--on-highlight,var(--on-accent));font-weight:600}
+.layout{display:grid;grid-template-columns:1fr 360px;gap:32px;padding:24px 0 40px}
+.sectlabel{display:flex;align-items:center;gap:14px;margin:6px 0 18px}
+.sectlabel:after{content:"";flex:1;height:1px;background:var(--line)}
+.story{cursor:pointer}
+.story:hover h2{color:var(--accent)}
+.story.hidden{display:none}
+.story.big .thumb img{width:100%;height:340px;object-fit:cover;object-position:center 30%;display:block}
+.thumb{position:relative;overflow:hidden;background:var(--line)}
+.thumb img{transition:filter .25s;display:block}
+html[data-theme="prisma"] .thumb img{filter:saturate(.9) contrast(1.03) sepia(.08) brightness(.99);transition:filter .35s, transform .45s}
+html[data-theme="@@THEME_KEY@@"] .thumb{background:#0B0E11}
+html[data-theme="@@THEME_KEY@@"] .thumb img{filter:grayscale(1) contrast(1.22) brightness(.72);transition:filter .35s, transform .45s}
+html[data-theme="@@THEME_KEY@@"] .thumb:before{content:"";position:absolute;inset:0;background:var(--accent);mix-blend-mode:color;opacity:.32;pointer-events:none;transition:opacity .35s;z-index:1}
+html[data-theme="@@THEME_KEY@@"] .story:hover .thumb:before{opacity:.12}
+html[data-theme="@@THEME_KEY@@"] .story:hover .thumb img{filter:grayscale(.55) contrast(1.15) brightness(.9)}
+html[data-theme="@@THEME_KEY@@"] .story:hover .thumb img{filter:grayscale(.2) saturate(.95) brightness(.78) contrast(1.1)}
+.thumb:after{content:"";position:absolute;inset:0;pointer-events:none}
+html[data-theme="prisma"] .thumb:after{background:linear-gradient(180deg,rgba(244,237,220,.06),rgba(27,23,20,.10))}
+html[data-theme="@@THEME_KEY@@"] .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.06),rgba(24,26,32,.48)),linear-gradient(0deg,rgba(252,213,53,.10),rgba(252,213,53,.03));pointer-events:none}
+.badge-ai,.badge-sec{position:absolute;z-index:2;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:4px 7px;border-radius:2px}
+.badge-ai{top:10px;left:10px;background:var(--highlight,var(--accent));color:var(--on-highlight,var(--on-accent));font-weight:600}
+.badge-sec{bottom:10px;left:10px;background:var(--badge-sec-bg);color:var(--badge-sec-ink)}
+h2{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height:1.15;margin:14px 0 8px;font-size:var(--h2)}
+.story.big h2{font-size:var(--h2-big);margin-top:16px}
+.dek{margin:0 0 10px;color:var(--ink-2)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:34px;border-top:1px solid var(--line);padding-top:26px}
+.grid .thumb img{width:100%;height:150px;object-fit:cover;display:block}
+.grid h2{font-size:var(--h2-grid);margin-top:12px}
+.grid .dek{font-size:var(--dek-size);color:var(--ink-2)}
+.dot{margin:0 6px}
+.empty{padding:26px 0;color:var(--muted);font-family:var(--mono);font-size:12px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;padding:28px 0 26px;border-bottom:1px solid var(--line)}
+.stat .n{font-family:var(--display);font-weight:700;font-size:var(--stat);line-height:.95;color:var(--accent);letter-spacing:-.035em;font-variant-numeric:tabular-nums}
+.stat .n small{font-size:.42em;font-weight:600;letter-spacing:0}
+.stat .k{display:block;margin-top:6px}
+.story .thumb img{will-change:transform}
+.story:hover .thumb img{transform:scale(1.045)}
+.story.big .thumb img{height:430px}
+.story.big .thumb:after{background:linear-gradient(180deg,rgba(24,26,32,.02) 40%,rgba(24,26,32,.55))}
+html[data-theme="prisma"] .story.big .thumb:after{background:linear-gradient(180deg,rgba(244,237,220,.02) 40%,rgba(27,23,20,.42))}
+.story.big .body{border-bottom:1px solid var(--line);padding-bottom:22px}
+.story.big h2{text-wrap:balance}
+.story.big .dek{font-size:calc(var(--dek-size)*1.05)}
+.card h3{font-size:24px}
+.bignum{font-family:var(--display);font-weight:700;font-size:46px;line-height:1;color:var(--accent);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.bar{height:12px;background:var(--bar);border-radius:2px;transition:width .6s cubic-bezier(.2,.7,.2,1)}
+.bar-row:hover .bar{background:var(--accent-2)}
+
+.card{border:1px solid var(--line);background:var(--paper);padding:18px;border-radius:var(--card-radius)}
+.card h3{font-family:var(--display);font-size:21px;margin:0 0 4px}
+.bar-row{display:grid;grid-template-columns:104px 1fr 26px;align-items:center;gap:8px;margin:7px 0}
+.bar-row .label{white-space:nowrap}
+.bar-row .val{text-align:right}
+.bar{height:9px;background:var(--highlight,var(--bar);border-radius:2px}
+.legend{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.discl p{margin:6px 0 0;font-size:calc(16px*var(--scale));color:var(--ink-2)}
+.discl a{color:var(--accent)}
+.foot{border-top:1px solid var(--line);padding:18px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:rgba(11,14,17,.72);display:none;z-index:50;padding:40px 20px;overflow:auto}
+.modal.open{display:block}
+.modal-card{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:var(--card-radius);padding:28px 30px 34px}
+.modal-card h2{font-size:calc(32px*var(--scale));margin-top:0}
+.modal-body p{font-size:calc(17px*var(--scale));line-height:1.55}
+.modal-body a{color:var(--accent)}
+.modal-close{float:right;font-family:var(--mono);font-size:11px;letter-spacing:.1em;border:1px solid var(--line);background:transparent;color:var(--ink);padding:7px 11px;cursor:pointer;border-radius:var(--ctrl-radius)}
+.proto{border:1px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;padding:3px 7px;border-radius:2px}
+/* mobile: stessa pagina, una colonna */
+@media (max-width:1000px){
+  .wrap{padding:0 16px}
+  .layout{grid-template-columns:1fr;gap:22px;padding:18px 0 30px}
+  .grid{grid-template-columns:1fr 1fr;gap:18px}
+  .story.big .thumb img{height:230px}
+  .story.big h2{font-size:calc(var(--h2-big)*.72)}
+  .topbar{flex-wrap:wrap;gap:10px}
+  .brand{font-size:18px}
+  .actions{gap:6px;flex-wrap:wrap}
+  .icon{height:32px;min-width:32px;padding:0 8px;font-size:11px}
+  #searchbox{min-width:0;flex:1 1 100%}
+  .tick-track{animation-duration:45s}
+  .modal{padding:14px}
+  .modal-card{padding:18px 16px 24px}
+  .modal-card h2{font-size:calc(24px*var(--scale))}
+}
+@media (max-width:680px){
+  .grid{grid-template-columns:1fr}
+  .brand small{display:none}
+  .bar-row{grid-template-columns:92px 1fr 22px}
+}
+"""
+
+JS = """
+const state = {sector:'all', q:''};
+function apply(){
+  document.querySelectorAll('.story').forEach(el=>{
+    const okSector = state.sector==='all' || el.dataset.sector===state.sector || el.dataset.sectorEn===state.sector;
+    const okQ = !state.q || (el.dataset.text||'').includes(state.q);
+    el.classList.toggle('hidden', !(okSector && okQ));
+  });
+  document.querySelectorAll('.chip').forEach(c=>c.classList.toggle('on', c.dataset.sector===state.sector));
+  document.querySelectorAll('section[data-stream]').forEach(s=>{
+    const any = s.querySelectorAll('.story:not(.hidden)').length;
+    const e = s.querySelector('.empty'); if(e) e.style.display = any ? 'none' : 'block';
+  });
+}
+function setSector(s){ state.sector = s; apply(); }
+function setLang(l){ document.body.dataset.lang = l;
+  document.querySelectorAll('[data-setlang]').forEach(b=>b.classList.toggle('on', b.dataset.setlang===l));
+  const sb = document.getElementById('searchbox');
+  sb.placeholder = l==='it' ? 'Cerca nel briefing…' : 'Search the briefing…'; }
+function toggleSearch(){ const b=document.getElementById('searchbox'); b.classList.toggle('show'); if(b.classList.contains('show')) b.focus(); }
+function cycleScale(){ const cur=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--scale'))||1;
+  const next = cur>1.07?1:(cur>0.97?1.1:1.02);
+  document.documentElement.style.setProperty('--scale', next);
+  document.getElementById('scalebtn').textContent = next===1?'Aa':(next<1?'Aa-':'Aa+'); }
+function toggleTheme(){ document.documentElement.dataset.theme = document.documentElement.dataset.theme==='prisma'?'@@THEME_KEY@@':'prisma'; }
+function openStory(id){ const d = FULL[id]; if(!d) return;
+  document.getElementById('m-title').textContent = d.title;
+  document.getElementById('m-meta').textContent = d.meta;
+  document.getElementById('m-discl').innerHTML = d.discl;
+  document.getElementById('m-body').innerHTML = d.body;
+  document.getElementById('modal').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeStory(){ document.getElementById('modal').classList.remove('open'); document.body.style.overflow=''; }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeStory(); });
+"""
+
+def build_blocks(items, lang, L, policy):
+    newest = items[0]
+    edition = fmt(newest["date_published"])
+    tot = sum(i["_prisma"]["sourceCount"] for i in items)
+    oggi = sum(1 for i in items if fmt(i["date_published"]).date() == edition.date())
+    maxsrc = max(i["_prisma"]["sourceCount"] for i in items)
+    ore = round((fmt(newest["date_published"]) - fmt(items[-1]["date_published"])).total_seconds() / 3600)
+    full = {}
+
+    def card(it, big=False):
+        sec_it, sec_en = sector_of(it)
+        dt = fmt(it["date_published"]).strftime("%H:%M")
+        meta = L["fonte_sing"].format(n=it["_prisma"]["sourceCount"])
+        img = f'<img src="{it["image"]}" alt="" loading="lazy">' if it.get("image") else ""
+        full[it["id"]] = {"title": it["title"],
+                          "meta": f"{meta} · {dt} UTC · {long_date(it['date_published'], lang)}",
+                          "body": strip_aside(it.get("content_html", "")),
+                          "discl": f'<div class="mono">{L["disclosure"]} · policy {it["_prisma"]["ai"]["policyVersion"]}</div>'}
+        text = html.escape((it["title"] + " " + it.get("summary", "")).lower(), quote=True)
+        return f'''<article class="story{' big' if big else ''}" data-sector="{sec_it}" data-sector-en="{sec_en}" data-text="{text}" tabindex="0" role="button" onclick="openStory('{it["id"]}')" onkeydown="if(event.key==='Enter')openStory('{it["id"]}')">
+  <div class="thumb">{img}<span class="badge-ai">IA</span><span class="badge-sec">{sec_en if lang == 'en' else sec_it}</span></div>
   <div class="body">
     <h2>{html.escape(it["title"])}</h2>
-    <p class="dek">{html.escape(it.get("summary",""))}</p>
+    <p class="dek">{html.escape(it.get("summary", ""))}</p>
     <div class="meta"><span class="mono">{meta}</span><span class="dot">·</span><span class="mono">{dt} UTC</span></div>
   </div>
 </article>'''
 
-ticker = "".join(f'<span class="tick-item">{html.escape(i["title"])}<span class="tick-sep">■</span></span>' for i in items[:8])
-
-chip_names = ["TUTTO"] + [s for s, _ in SECTORS] + ["ALTRO"]
-chips = "".join(f'<button class="chip{" on" if n=="TUTTO" else ""}">{n}</button>' for n in chip_names)
-
-max_src = max(i["_prisma"]["sourceCount"] for i in items)
-bars = "".join(
-    f'<div class="bar-row"><span class="mono label">{fmt_date(i["date_published"]).strftime("%d/%m %H:%M")}</span>'
-    f'<span class="bar" style="width:{max(4, i["_prisma"]["sourceCount"]/max_src*100):.0f}%"></span>'
-    f'<span class="mono val">{i["_prisma"]["sourceCount"]}</span></div>'
-    for i in items[:8])
-
-grid = "".join(card(i) for i in items[1:])
-
-HTML = f'''<!DOCTYPE html>
-<html lang="it" data-theme="cripto">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cripto Capitale — briefing di {it_date(newest["date_published"])}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,300..700;1,6..72,300..500&family=Fraunces:opsz,wght@9..144,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<meta name="robots" content="noindex,nofollow">
-<style>
-/* ============ DESIGN SYSTEM — due temi ============
-   tema "prisma"  = token letti da prismanews.com/en il 15/10/2026: carta #f4eddc, inchiostro #1b1714,
-                    accento #b9091b, teal #0096a7, ambra #cfa200, bordi #d8cfbc;
-                    font Newsreader (corpo 19px), Fraunces (titoli), JetBrains Mono (metadati 11.5px).
-   tema "cripto"  = design system Binance (sito crypto n.1 per visite mensili, letto il 15/10/2026):
-                    #181A20 / superfici #202630 · #29313D · bordi #333B47 · testo #EAECEF · unico accento #FCD535
-                    · semantici #2EBD85 / #F6465D, font IBM Plex Sans.                        */
-:root{{
-  --bg:#181A20; --paper:#202630; --surface-2:#29313D; --ink:#EAECEF; --ink-2:#EAECEF; --muted:#929AA5; --muted-2:#707A8A;
-  --line:#333B47; --line-2:#434C5A; --accent:#FCD535; --accent-2:#F0B90B; --on-accent:#202630; --bar:#FCD535;
-  --chip-bg:#29313D; --chip-border:#434C5A; --badge-sec-bg:#29313D; --badge-sec-ink:#EAECEF;
-  --display:"IBM Plex Sans",Arial,sans-serif; --body:"IBM Plex Sans",Arial,sans-serif; --mono:"IBM Plex Sans",Arial,sans-serif;
-  --body-size:16px; --dek-size:15px; --h2:24px; --h2-big:40px; --h2-grid:18px; --h2-small:19px;
-  --chip-radius:4px; --card-radius:10px; --ctrl-radius:4px; --maxw:1280px;
-}}
-html[data-theme="prisma"]{{
-  --bg:#f4eddc; --paper:#faf6ec; --surface-2:#f4eddc; --ink:#1b1714; --ink-2:#3d362e; --muted:#7b7263; --muted-2:#7b7263;
-  --line:#d8cfbc; --line-2:#c9bfa8; --accent:#b9091b; --accent-2:#b82027; --on-accent:#ffffff; --bar:#0096a7;
-  --chip-bg:transparent; --chip-border:#c9bfa8; --badge-sec-bg:rgba(244,237,220,.92); --badge-sec-ink:#1b1714;
-  --display:"Fraunces",Georgia,serif; --body:"Newsreader",Georgia,serif; --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
-  --body-size:19px; --dek-size:16px; --h2:27px; --h2-big:40px; --h2-grid:19px; --h2-small:19px;
-  --chip-radius:999px; --card-radius:0px; --ctrl-radius:0px;
-}}
-*{{box-sizing:border-box}}
-body{{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:var(--body-size);line-height:1.45}}
-.mono{{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}}
-a{{color:inherit}}
-.wrap{{max-width:var(--maxw);margin:0 auto;padding:0 24px}}
-
-/* topbar */
-.topbar{{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)}}
-.brand{{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;letter-spacing:-.02em;font-size:22px}}
-.brand .mark{{width:26px;height:26px;background:var(--accent);display:inline-block;clip-path:polygon(50% 0,100% 100%,0 100%)}}
-.brand small{{font-family:var(--mono);font-size:11.5px;font-weight:400;color:var(--muted);letter-spacing:.14em}}
-.actions{{display:flex;align-items:center;gap:14px}}
-.icon{{width:34px;height:34px;border:1px solid var(--line);display:grid;place-items:center;font-family:var(--mono);font-size:12px;background:transparent;color:var(--ink);cursor:pointer;border-radius:var(--ctrl-radius)}}
-.icon.wide{{width:auto;padding:0 12px}}
-.toggle{{border:1px solid var(--line);background:transparent;color:var(--ink);font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:9px 12px;cursor:pointer;border-radius:var(--ctrl-radius)}}
-
-/* edition */
-.edition{{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line)}}
-.edition .l{{color:var(--accent);font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}}
-
-/* ticker */
-.ticker{{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding:12px 0;overflow:hidden}}
-.tick-label{{background:var(--accent);color:var(--on-accent);font-weight:600;font-family:var(--mono);font-size:11px;letter-spacing:.12em;padding:5px 9px;white-space:nowrap;position:relative;z-index:2}}
-.tick-wrap{{flex:1;overflow:hidden;min-width:0}}
-.tick-track{{display:flex;gap:22px;white-space:nowrap;font-family:var(--mono);font-size:11.5px;letter-spacing:.04em;animation:slide 70s linear infinite}}
-.tick-sep{{color:var(--accent);margin-left:22px}}
-@keyframes slide{{from{{transform:translateX(0)}}to{{transform:translateX(-50%)}}}}
-@media (prefers-reduced-motion:reduce){{.tick-track{{animation:none}}}}
-
-/* chips */
-.chips{{display:flex;gap:8px;flex-wrap:wrap;padding:16px 0;border-bottom:1px solid var(--line)}}
-.chip{{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;padding:9px 16px;border:1px solid var(--chip-border);background:var(--chip-bg);color:var(--ink);border-radius:var(--chip-radius);cursor:pointer}}
-.chip.on{{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}}
-
-/* layout */
-.layout{{display:grid;grid-template-columns:1fr 360px;gap:32px;padding:24px 0 40px}}
-.sectlabel{{display:flex;align-items:center;gap:14px;margin:6px 0 18px}}
-.sectlabel:after{{content:"";flex:1;height:1px;background:var(--line)}}
-.story.big .thumb img{{width:100%;height:340px;object-fit:cover;object-position:center 30%;display:block}}
-.thumb{{position:relative;overflow:hidden;background:var(--line)}}
-/* le immagini AI del feed sono chiare e fuori gamma: le porto dentro il tema con un grade,
-   non le rigenero (per quello serve un modello di immagini: vedi nota nel footer) */
-.thumb img{{transition:filter .25s;display:block}}
-html[data-theme="prisma"] .thumb img{{filter:saturate(.9) contrast(1.03) sepia(.08) brightness(.99)}}
-html[data-theme="cripto"] .thumb img{{filter:saturate(.7) brightness(.68) contrast(1.1)}}
-.thumb:after{{content:"";position:absolute;inset:0;pointer-events:none}}
-html[data-theme="prisma"] .thumb:after{{background:linear-gradient(180deg,rgba(244,237,220,.06),rgba(27,23,20,.10))}}
-html[data-theme="cripto"] .thumb:after{{background:linear-gradient(180deg,rgba(24,26,32,.10),rgba(24,26,32,.42))}}
-.badge-ai,.badge-sec{{position:absolute;font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;padding:4px 7px}}
-.badge-ai{{top:10px;left:10px;background:var(--accent);color:var(--on-accent);font-weight:600}}
-.badge-sec{{bottom:10px;left:10px;background:var(--badge-sec-bg);color:var(--badge-sec-ink)}}
-h2{{font-family:var(--display);font-weight:600;letter-spacing:-.015em;line-height:1.15;margin:14px 0 8px;font-size:var(--h2)}}
-.story.big h2{{font-size:var(--h2-big);margin-top:16px}}
-.dek{{margin:0 0 10px;color:var(--ink-2)}}
-.grid{{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;margin-top:34px;border-top:1px solid var(--line);padding-top:26px}}
-.grid .thumb img{{width:100%;height:150px;object-fit:cover;display:block}}
-.grid h2{{font-size:var(--h2-grid);margin-top:12px}}
-.grid .dek{{font-size:var(--dek-size);color:var(--ink-2)}}
-.dot{{margin:0 6px}}
-
-/* rail */
-.rail{{display:flex;flex-direction:column;gap:18px}}
-.card{{border:1px solid var(--line);background:var(--paper);padding:18px;border-radius:var(--card-radius)}}
-.card h3{{font-family:var(--display);font-size:21px;margin:0 0 4px}}
-.bar-row{{display:grid;grid-template-columns:104px 1fr 26px;align-items:center;gap:8px;margin:7px 0}}
-.bar{{height:9px;background:var(--bar);border-radius:2px}}
-.bar-row .val{{text-align:right}}
-.bar-row .label{{white-space:nowrap}}
-.legend{{margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}}
-.discl p{{margin:6px 0 0;font-size:16px;color:var(--ink-2)}}
-.discl a{{color:var(--accent)}}
-.foot{{border-top:1px solid var(--line);padding:18px 0 40px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}}
-</style>
-</head>
-<body>
-<div class="wrap">
-  <div class="topbar">
-    <div class="brand"><span class="mark"></span>CRIPTO CAPITALE <small>· PRISMA NEWS</small></div>
-    <div class="actions">
-      <button class="icon">⌕</button>
-      <button class="icon">▤</button>
-      <button class="icon wide">IT ▾</button>
-      <button class="toggle" onclick="document.documentElement.dataset.theme = document.documentElement.dataset.theme==='prisma'?'cripto':'prisma'">TEMA</button>
-      <button class="icon">Aa</button>
-      <button class="icon wide">ACCEDI</button>
-    </div>
+    ticker = "".join(f'<span class="tick-item">{html.escape(i["title"])}<span class="tick-sep">■</span></span>' for i in items[:8])
+    chips = f'<button class="chip" data-sector="all" onclick="setSector(\'all\')">{L["tutte"]}</button>'
+    for it_name, en_name, _ in SECTORS:
+        key = en_name if lang == "en" else it_name
+        chips += f'<button class="chip" data-sector="{key}" onclick="setSector(\'{key}\')">{key}</button>'
+    other = "OTHER" if lang == "en" else "ALTRO"
+    chips += f'<button class="chip" data-sector="{other}" onclick="setSector(\'{other}\')">{other}</button>'
+    bars = "".join(f'<div class="bar-row"><span class="mono label">{fmt(i["date_published"]).strftime("%d/%m %H:%M")}</span>'
+                   f'<span class="bar" style="width:{max(4, i["_prisma"]["sourceCount"]/maxsrc*100):.0f}%"></span>'
+                   f'<span class="mono val">{i["_prisma"]["sourceCount"]}</span></div>' for i in items[:8])
+    grid = "".join(card(i) for i in items[1:])
+    return f'''
+  <div class="edition" data-lang="{lang}">
+    <div class="l">● {L["apertura"]} · {edition.strftime("%H:%M")} UTC · {long_date(newest["date_published"], lang)}</div>
+    <div class="mono">{tot} {L["fonti"]} · {L["lingua"]} · {oggi} {L["brief_oggi"]}</div>
   </div>
-
-  <div class="edition">
-    <div class="l">● Edizione delle {edition.strftime("%H:%M")} UTC · {it_date(newest["date_published"])}</div>
-    <div class="mono">{tot_fonti} fonti · lingua IT · {oggi} briefing oggi</div>
-  </div>
-
-  <div class="ticker">
-    <span class="tick-label">ULTIM'ORA</span>
+  <div class="ticker" data-lang="{lang}">
+    <span class="tick-label">{L["ultimora"]}</span>
     <div class="tick-wrap"><div class="tick-track">{ticker}{ticker}</div></div>
   </div>
-
-  <nav class="chips">{chips}</nav>
-
+  <nav class="chips" data-lang="{lang}">{chips}</nav>
   <div class="layout">
-    <section>
-      <div class="sectlabel"><span class="mono">Apertura · {it_date(newest["date_published"])}</span></div>
+    <section data-stream data-lang="{lang}">
+      <div class="stats">
+        <div class="stat"><div class="n">{oggi}</div><span class="mono k">{L["brief_oggi"]}</span></div>
+        <div class="stat"><div class="n">{tot}</div><span class="mono k">{L["fonti"]}</span></div>
+        <div class="stat"><div class="n">{maxsrc}</div><span class="mono k">{L["fino"]}</span></div>
+        <div class="stat"><div class="n">{ore}h</div><span class="mono k">{L["copertura_word"]}</span></div>
+      </div>
+      <div class="sectlabel"><span class="mono">{L["apertura"]} · {long_date(newest["date_published"], lang)}</span></div>
       {card(newest, big=True)}
       <div class="grid">{grid}</div>
+      <div class="empty" style="display:none">∅ nessun risultato</div>
     </section>
-
-    <aside class="rail">
+    <aside class="rail" data-lang="{lang}">
       <div class="card">
-        <h3>Briefing di oggi: {oggi}</h3>
-        <div class="mono">{tot_fonti} fonti · fino a {tot_lingue} lingue per sintesi</div>
-        <div class="legend mono">Fonti per briefing</div>
+        <h3>{L["brief"]}</h3>
+        <div class="bignum">{oggi}</div>
+        <div class="mono">{tot} {L["fonti"]} · {ore}h {L["copertura_word"]}</div>
+        <div class="legend mono">{L["copertura"]}</div>
         {bars}
-        <div class="legend"><span class="mono">Quante testate diverse sostengono ogni sintesi. Dato del feed (sourceCount).</span></div>
+        <div class="legend"><span class="mono">{L["copertura_note"]}</span></div>
       </div>
       <div class="card discl">
-        <div class="mono">Trasparenza</div>
+        <div class="mono">{L["disclosure"]}</div>
         <h3>{policy["short"]}</h3>
         <p>{policy["detail"]}</p>
-        <p class="mono">Policy {policy["policyVersion"]} · revisione: {policy["reviewStatus"]} · immagini {policy["image"].lower()}</p>
+        <p class="mono">Policy {policy["policyVersion"]} · {policy["reviewStatus"]} · {policy["image"]}</p>
         <p><a href="{policy["methodologyUrl"]}">{policy["methodologyLink"]} →</a></p>
       </div>
       <div class="card">
-        <div class="mono">Come leggere questa pagina</div>
-        <p style="font-size:16px;color:var(--ink-2);margin:8px 0 0">Ogni titolo è una sintesi multi-fonte: il numero accanto dice quante testate la sostengono. Le categorie sono una proposta di navigazione, non un dato del feed (che ha tag quasi vuoti).</p>
+        <div class="mono">{L["come"]}</div>
+        <p style="font-size:calc(16px*var(--scale));color:var(--ink-2);margin:8px 0 0">{L["come_txt"]}</p>
       </div>
     </aside>
-  </div>
+  </div>''', full
 
+d_it = json.load(open(feed_it, encoding="utf-8"))
+d_en = json.load(open(feed_en, encoding="utf-8"))
+policy_it = d_it["_prisma"]["ai"]
+policy_en = d_en["_prisma"]["ai"]
+blocks_it, full_it = build_blocks(d_it["items"], "it", LABELS["it"], policy_it)
+blocks_en, full_en = build_blocks(d_en["items"], "en", LABELS["en"], policy_en)
+FULL = {**full_it, **full_en}
+full_js = json.dumps(FULL, ensure_ascii=False).replace("</", "<\\/")
+policy = d_it["_prisma"]["ai"]
+
+HTML = f'''<!DOCTYPE html>
+<html lang="it" data-theme="@@THEME_KEY@@">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>@@NAME@@ — briefing {long_date(d_it["items"][0]["date_published"], "it")}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="@@FONTS_URL@@" rel="stylesheet">
+<style>{CSS}</style>
+</head>
+<body data-lang="it">
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><span class="mark"></span>@@NAME@@ <small>@@BRAND_TAIL@@</small> <span class="proto">PROTOTIPO</span></div>
+    <div class="actions">
+      <input id="searchbox" type="search" placeholder="Cerca nel briefing…" oninput="state.q=this.value.trim().toLowerCase(); apply();">
+      <button class="icon" onclick="toggleSearch()" title="Cerca (⌕)">⌕</button>
+      <button class="icon" data-setlang="it" onclick="setLang('it')">IT</button>
+      <button class="icon" data-setlang="en" onclick="setLang('en')">EN</button>
+      <button class="icon" id="scalebtn" onclick="cycleScale()" title="Dimensione testo">Aa</button>
+      <button class="icon" onclick="toggleTheme()" title="Design system">TEMA</button>
+      <a class="icon" href="{policy["methodologyUrl"]}" title="Come lavora Prisma News" target="_blank" rel="noopener">?</a>
+    </div>
+  </div>
+  {blocks_it}
+  {blocks_en}
   <div class="foot">
-    <span class="mono">Prototipo non pubblicato · dati: feed Refracto Cripto Capitale (staging) · generato il {datetime.datetime.now().strftime("%d/%m/%Y %H:%M")}</span>
-    <span class="mono">20 item nel feed · finestra 12–15 ottobre 2026</span>
+    <span class="mono">{LABELS['it']['proto']} · {LABELS['it']['dati']} · generato {datetime.datetime.now().strftime("%d/%m/%Y %H:%M")}</span>
+    <span class="mono">20 {LABELS['it']['finestra']}</span>
   </div>
 </div>
+
+<div class="modal" id="modal" onclick="if(event.target===this)closeStory()">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeStory()">✕ {LABELS['it']['chiudi']}</button>
+    <div id="m-discl"></div>
+    <h2 id="m-title"></h2>
+    <div class="mono" id="m-meta" style="margin-bottom:14px"></div>
+    <div class="modal-body" id="m-body"></div>
+  </div>
+</div>
+
+<script>
+const FULL = {full_js};
+{JS}
+setLang('it'); apply();   /* chip 'TUTTO' attivo al caricamento */
+</script>
 </body>
 </html>
 '''
+HTML = (HTML.replace("@@THEME_KEY@@", THEME_KEY).replace("@@NAME@@", NAME)
+             .replace("@@BRAND_TAIL@@", BRAND_TAIL).replace("@@FONTS_URL@@", CONFIG["fonts_url"])
+             .replace("__ROOT_TOKENS__", CONFIG["root_tokens"]))
 open(out_path, "w", encoding="utf-8").write(HTML)
-print("scritto", out_path, len(HTML), "byte ·", len(items), "item ·", oggi, "briefing oggi")
+print("scritto", out_path, len(HTML), "byte ·", len(d_it["items"]), "item IT +", len(d_en["items"]), "item EN")
